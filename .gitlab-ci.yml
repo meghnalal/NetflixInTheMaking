@@ -1,0 +1,49 @@
+stages:
+  - validate
+  - plan
+  - apply
+
+variables:
+  TF_ROOT: "."
+  TF_IN_AUTOMATION: "true"
+
+cache:
+  key: "${CI_COMMIT_REF_SLUG}"
+  paths:
+    - .terraform/
+
+before_script:
+  - apk add --no-cache curl unzip bash jq python3 py3-pip
+  - curl -fsSL https://releases.hashicorp.com/terraform/1.9.3/terraform_1.9.3_linux_amd64.zip -o terraform.zip
+  - unzip terraform.zip && mv terraform /usr/local/bin/ && rm terraform.zip
+  - terraform -version
+
+validate:
+  stage: validate
+  script:
+    - cd $TF_ROOT
+    - terraform init -backend=false
+    - terraform fmt -check
+    - terraform validate
+
+plan:
+  stage: plan
+  script:
+    - cd $TF_ROOT
+    - terraform init
+    - terraform plan -out=tfplan
+  artifacts:
+    paths:
+      - $TF_ROOT/tfplan
+    expire_in: 1 hour
+  when: manual
+
+apply:
+  stage: apply
+  script:
+    - cd $TF_ROOT
+    - terraform init
+    - terraform apply -auto-approve tfplan
+  dependencies:
+    - plan
+  when: manual
