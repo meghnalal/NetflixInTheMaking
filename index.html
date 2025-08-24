@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+</head>
+<body>
+  <video id="video" controls autoplay width="640" height="360"></video>
+  <script>
+    var video = document.getElementById('video');
+    var cloudfrontUrl = 'https://d1ybvxyaczpe2t.cloudfront.net/Pgm1_HD_SQ_25p_0_tc_12_10_45_16_20250822-175522/Pgm1_HD_SQ_25p_0_tc_12_10_45_16.m3u8';
+
+    if (Hls.isSupported()) {
+      var hls = new Hls();
+      hls.loadSource(cloudfrontUrl);
+      hls.attachMedia(video);
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      video.src = cloudfrontUrl; // Safari native HLS support
+    }
+  </script>
+</body>
+</html>
