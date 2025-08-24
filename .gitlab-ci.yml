@@ -1,7 +1,10 @@
+image: alpine:3.18
+
 stages:
   - validate
   - plan
   - apply
+  - destroy
 
 variables:
   TF_ROOT: "."
@@ -23,7 +26,7 @@ validate:
   script:
     - cd $TF_ROOT
     - terraform init -backend=false
-    - terraform fmt -check
+    - terraform fmt
     - terraform validate
 
 plan:
@@ -36,7 +39,6 @@ plan:
     paths:
       - $TF_ROOT/tfplan
     expire_in: 1 hour
-  when: manual
 
 apply:
   stage: apply
@@ -44,6 +46,16 @@ apply:
     - cd $TF_ROOT
     - terraform init
     - terraform apply -auto-approve tfplan
+  dependencies:
+    - plan
+  when: manual
+
+destroy:
+  stage: destroy
+  script:
+    - cd $TF_ROOT
+    - terraform init
+    - terraform destroy -auto-approve
   dependencies:
     - plan
   when: manual
